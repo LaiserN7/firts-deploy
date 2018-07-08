@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -19,10 +19,14 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
         private static int[] TrustedUsers => _trustedUsers ?? (_trustedUsers = new[] { 449279856 });
         private static Dictionary<string, string> _chatFiles;
         private static Dictionary<string, string> ChatFiles => _chatFiles ?? (_chatFiles = new Dictionary<string, string> { { "Sticker_Ti_pidor", "CAADAgADbgEAAjbsGwVfHkWISq9DiQI" } });
+        private readonly BotConfiguration _config;
+        private static Dictionary<string, string> _chatOptions;
+        private static Dictionary<string, string> ChatOptions => _chatOptions ??
+            (_chatOptions = new Dictionary<string, string> { { "repeat", "false" } });
 
-
-        public UpdateService(IBotService botService, ILogger<UpdateService> logger)
+        public UpdateService(IBotService botService, ILogger<UpdateService> logger, IOptions<BotConfiguration> config)
         {
+            _config = config.Value;
             _botService = botService;
             _logger = logger;
         }
@@ -66,17 +70,16 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
         {
             var message = update.Message;
 
-            if (!TrustedUsers.Contains(message.From.Id)) return;
-
             if (message == null || message.Type != MessageType.Text) return;
 
-            if (Regex.IsMatch(message.Text, @"туп.*бот|бот.*туп", RegexOptions.IgnoreCase))
+
+            if (Regex.IsMatch(message.Text, @"туп.*бот|бот.*туп|бот.*глуп", RegexOptions.IgnoreCase))
             {
                 await _botService.Client.SendTextMessageAsync(message.Chat.Id, "Kiss my shiny metal arse!!!");
                 return;
             }
 
-            if (Regex.IsMatch(message.Text, @"руслан.*знаешь|знаешь.*руслан", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(message.Text, @"руслан.*знаешь|знаешь.*руслан|руслан.*ведь|дим.*ведь|", RegexOptions.IgnoreCase))
             {
                 await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["Sticker_Ti_pidor"]);
                 return;
@@ -88,13 +91,22 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 return;
             }
 
+            if (Regex.IsMatch(message.Text, @"ping", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendTextMessageAsync(message.Chat.Id, "pong");
+                return;
+            }
+
+            if (Regex.IsMatch(message.Text, @"^нет", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendTextMessageAsync(message.Chat.Id, "Пидора ответ");
+                return;
+            }
+
+            if (!TrustedUsers.Contains(message.From.Id)) return;
+
             switch (message.Text.Split(' ').First())
             {
-                case "ping":
-                    await _botService.Client.SendTextMessageAsync(
-                        message.Chat.Id,
-                        "pong");
-                    break;
 
                 // send inline keyboard
                 case "/inline":
@@ -137,21 +149,21 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                     break;
 
                 // send a photo
-                case "/photo":
-                    await _botService.Client.SendChatActionAsync(message.Chat.Id, ChatAction.UploadPhoto);
+                //case "/photo":
+                //    await _botService.Client.SendChatActionAsync(message.Chat.Id, ChatAction.UploadPhoto);
 
-                    const string file = @"Files/tux.png";
+                //    const string file = @"Files/tux.png";
 
-                    var fileName = file.Split(Path.DirectorySeparatorChar).Last();
+                //    var fileName = file.Split(Path.DirectorySeparatorChar).Last();
 
-                    using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        await _botService.Client.SendPhotoAsync(
-                            message.Chat.Id,
-                            fileStream,
-                            "Nice Picture");
-                    }
-                    break;
+                //    using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+                //    {
+                //        await _botService.Client.SendPhotoAsync(
+                //            message.Chat.Id,
+                //            fileStream,
+                //            "Nice Picture");
+                //    }
+                //    break;
 
                 // request location or contact
                 case "/request":
@@ -171,14 +183,41 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                     await _botService.Client.SendTextMessageAsync(message.Chat.Id,
                         "Дратути");
                     break;
+                case "/chatId":
+                    await _botService.Client.SendTextMessageAsync(message.Chat.Id,
+                        $"Current chatId: {message.Chat.Id}");
+                    break;
+                case "/ver":
+                    await _botService.Client.SendTextMessageAsync(message.Chat.Id,
+                        $"Current version is: {_config.Version}");
+                    break;
+                case "/config":
+                    await _botService.Client.SendTextMessageAsync(message.Chat.Id,
+                        $"Config Type: {_config.ConfigType}");
+                    break;
+                case "/repeat":
+                    ReplyKeyboardMarkup _keyboard = new[]
+                    {
+                        new[] { "Enable", "Disable" }
+                    };
+
+                    await _botService.Client.SendTextMessageAsync(
+                        message.Chat.Id,
+                        "Choose",
+                        replyMarkup: _keyboard);
+                    break;
+
                 case "/info":
-                    const string usage = @"
-Usage:
-/inline   - send inline keyboard
-/keyboard - send custom keyboard
-/photo    - send a photo
-/request  - request location or contact
-/hello - send a helo text";
+                    const string usage =
+                        @"Usage:
+                        /inline   - send inline keyboard
+                        /keyboard - send custom keyboard
+                        /request  - request location or contact
+                        /hello - send a helo text
+                        /ver - watch a version of bot
+                        /chatId - watch id of current chat
+                        /config - watch a type of config
+                        /repeat - endable/disable repeat message";
 
                     await _botService.Client.SendTextMessageAsync(
                         message.Chat.Id,
