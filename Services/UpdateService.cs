@@ -79,7 +79,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 return;
             }
 
-            if (Regex.IsMatch(message.Text, @"руслан.*знаешь|знаешь.*руслан|руслан.*ведь|дим.*ведь|", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(message.Text, @"руслан.*знаешь|знаешь.*руслан|руслан.*ведь|дим.*ведь", RegexOptions.IgnoreCase))
             {
                 await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["Sticker_Ti_pidor"]);
                 return;
