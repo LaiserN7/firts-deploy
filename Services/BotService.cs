@@ -27,7 +27,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
             var httpClientHandler = new HttpClientHandler()
             {
-                Proxy = proxy,
+                //Proxy = proxy,
                 SslProtocols = SslProtocols.Tls | SslProtocols.Ssl3 | SslProtocols.Ssl2
             };
 

@@ -9,3 +9,14 @@ C:\Users\Наиль\Downloads\Telegram.Bot.Examples-master\Telegram.Bot.Examples
 C:\Users\Наиль\Downloads\Telegram.Bot.Examples-master\Telegram.Bot.Examples-master\Telegram.Bot.Examples.DotNetCoreWebHook\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.dll
 C:\Users\Наиль\Downloads\Telegram.Bot.Examples-master\Telegram.Bot.Examples-master\Telegram.Bot.Examples.DotNetCoreWebHook\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.pdb
 C:\Users\Наиль\Downloads\Telegram.Bot.Examples-master\Telegram.Bot.Examples-master\Telegram.Bot.Examples.DotNetCoreWebHook\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.csprojAssemblyReference.cache
+D:\Projects\telegram-bot\bin\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.deps.json
+D:\Projects\telegram-bot\bin\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.runtimeconfig.json
+D:\Projects\telegram-bot\bin\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.runtimeconfig.dev.json
+D:\Projects\telegram-bot\bin\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.dll
+D:\Projects\telegram-bot\bin\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.pdb
+D:\Projects\telegram-bot\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.csprojAssemblyReference.cache
+D:\Projects\telegram-bot\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.csproj.CoreCompileInputs.cache
+D:\Projects\telegram-bot\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.AssemblyInfoInputs.cache
+D:\Projects\telegram-bot\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.AssemblyInfo.cs
+D:\Projects\telegram-bot\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.dll
+D:\Projects\telegram-bot\obj\Debug\netcoreapp2.1\Telegram.Bot.Examples.DotNetCoreWebHook.pdb
