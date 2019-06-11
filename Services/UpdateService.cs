@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -23,6 +24,9 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
         private static Dictionary<string, string> _chatOptions;
         private static Dictionary<string, string> ChatOptions => _chatOptions ??
             (_chatOptions = new Dictionary<string, string> { { "repeat", "false" } });
+        private static Dictionary<string, string> _chatsIds;
+        private static Dictionary<string, string> ChatsIds => _chatsIds ??
+           (_chatsIds = new Dictionary<string, string> { { "main", "-1001300792680" }, {"private", "449279856" } });
 
         public UpdateService(IBotService botService, ILogger<UpdateService> logger, IOptions<BotConfiguration> config)
         {
@@ -31,18 +35,26 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
             _logger = logger;
         }
 
-        public async Task EchoAsync(Update update)
+        public Task EchoAsync(Update update)
         {
-            if (update.Type != UpdateType.Message)
+            if (!string.IsNullOrEmpty(update.Message.Sticker.FileId) && update.Message.Chat.Id == _config.DefaultChatId)
+                _botService.Client.SendTextMessageAsync(_config.DefaultChatId, update.Message.Sticker.FileId);
+
+            switch (update.Type)
             {
-                return;
+                case UpdateType.Message:
+                    return Сheck(update);
+
+                case UpdateType.CallbackQuery:
+                    return HandlingCallback(update.CallbackQuery);
             }
 
-            var message = update.Message;
+            throw new ApplicationException($"Type '{update.Type}' not support");
+            //var message = update.Message;
 
-            _logger.LogInformation("Received Message from {0}", message.Chat.Id);
+            //_logger.LogInformation("Received Message from {0}", message.Chat.Id);
 
-            await Сheck(update);
+            
 
             //if (message.Type == MessageType.Text)
             //{
@@ -66,11 +78,28 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
             //}
         }
 
+        private async Task HandlingCallback(CallbackQuery callback)
+        {
+            (byte commandId, long chatId, string value) = GetInfoFromCallBack(callback.Data);
+            if (commandId  == (byte) Commands.repeat)
+            {
+                ChatOptions["repeat"] = value;
+                await _botService.Client.SendTextMessageAsync(chatId, $"success update state of repeat to {value}");
+            }
+        }
+
+
         private async Task Сheck(Update update)
         {
             var message = update.Message;
 
             if (message == null || message.Type != MessageType.Text) return;
+
+            if (ChatOptions["repeat"] == "true")
+            {
+                // Echo each Message
+                await _botService.Client.SendTextMessageAsync(message.Chat.Id, message.Text);
+            }
 
 
             if (Regex.IsMatch(message.Text, @"туп.*бот|бот.*туп|бот.*глуп", RegexOptions.IgnoreCase))
@@ -196,10 +225,10 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                         $"Config Type: {_config.ConfigType}");
                     break;
                 case "/repeat":
-                    ReplyKeyboardMarkup _keyboard = new[]
-                    {
-                        new[] { "Enable", "Disable" }
-                    };
+                    var rowButtons = new List<IEnumerable<InlineKeyboardButton>>();
+                    var _keyboard = new InlineKeyboardMarkup(rowButtons);
+                    rowButtons.Add(GetInlineKeyboard("Enable", $"commandId={Commands.repeat}&value=true"));
+                    rowButtons.Add(GetInlineKeyboard("Disable", $"commandId={Commands.repeat}&value=false"));
 
                     await _botService.Client.SendTextMessageAsync(
                         message.Chat.Id,
@@ -209,15 +238,15 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
                 case "/info":
                     const string usage =
-                        @"Usage:
-                        /inline   - send inline keyboard
-                        /keyboard - send custom keyboard
-                        /request  - request location or contact
-                        /hello - send a helo text
-                        /ver - watch a version of bot
-                        /chatId - watch id of current chat
-                        /config - watch a type of config
-                        /repeat - endable/disable repeat message";
+@"Usage:
+/inline   - send inline keyboard
+/keyboard - send custom keyboard
+/request  - request location or contact
+/hello - send a helo text
+/ver - watch a version of bot
+/chatId - watch id of current chat
+/config - watch a type of config
+/repeat - endable/disable repeat message";
 
                     await _botService.Client.SendTextMessageAsync(
                         message.Chat.Id,
@@ -225,6 +254,32 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                         replyMarkup: new ReplyKeyboardRemove());
                     break;
             }
+        }
+
+        private InlineKeyboardButton[] GetInlineKeyboard(string taskName, string callBackData) => new InlineKeyboardButton[]
+        {
+            InlineKeyboardButton.WithCallbackData(text:taskName, callbackData:callBackData)
+        };
+
+        private (byte command, long chatId, string value) GetInfoFromCallBack(string callBack)
+        {
+            const string pattern = @"^commandId=(?<commandId>-?\d+)&chatId=(?<chatId>-?\d+)&value=(?<value>-?.*)";
+
+            var m = Regex.Match(callBack, pattern);
+
+            if (m.Length > 0)
+                if (byte.TryParse(m.Groups["commandId"].Value, out byte command)
+                    && long.TryParse(m.Groups["chatId"].Value, out long chatId)
+                    && m.Groups["value"].Value != null)
+                {
+                    return (command, chatId, m.Groups["value"].Value);
+                }
+
+              throw new ApplicationException($"Wrong query callBack = {callBack}");
+        }
+
+        public enum Commands: byte{
+            repeat
         }
     }
 }

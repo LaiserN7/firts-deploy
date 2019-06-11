@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Telegram.Bot.Examples.DotNetCoreWebHook.Middleware;
 using Telegram.Bot.Examples.DotNetCoreWebHook.Services;
 
 namespace Telegram.Bot.Examples.DotNetCoreWebHook
@@ -26,6 +27,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseExceptionMiddleware();
             app.UseMvc();
         }
     }

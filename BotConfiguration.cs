@@ -19,5 +19,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook
         public string Version { get; set; }
 
         public string ConfigType { get; set; }
+
+        public long DefaultChatId { get; set; }
     }
 }
