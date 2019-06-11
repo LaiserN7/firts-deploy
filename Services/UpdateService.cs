@@ -19,7 +19,10 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
         private static int[] _trustedUsers;
         private static int[] TrustedUsers => _trustedUsers ?? (_trustedUsers = new[] { 449279856 });
         private static Dictionary<string, string> _chatFiles;
-        private static Dictionary<string, string> ChatFiles => _chatFiles ?? (_chatFiles = new Dictionary<string, string> { { "Sticker_Ti_pidor", "CAADAgADbgEAAjbsGwVfHkWISq9DiQI" } });
+        private static Dictionary<string, string> ChatFiles => _chatFiles ?? (_chatFiles = new Dictionary<string, string>
+        { { "Sticker_Ti_pidor", "CAADAgADbgEAAjbsGwVfHkWISq9DiQI" }, {"Bille_ok", "CAADAgADxgYAAkb7rATY_tcr05tnDQI" }, {"pikachu_coffe", "CAADAgADvwIAAjZ2IA6DDqb7e0kSxQI" },
+            {"capitan", "CAADAgADOgEAAhZ8aAOmH9gbWog58wI" }, {"buxat_student", "CAADBQADoQMAAukKyAM19jBdMVuSAgI"}, {"gde_vse", "CAADBQADqgMAAukKyAOMMrddotAFYQI" },
+            {"krasava", "CAADBQADewMAAukKyANR7TNPzLj7awI"}, { "go_buxat", "CAADBQADbwMAAukKyAOvzr7ZArpddAI"}, { "privet", "CAADAgADBQYAAhhC7giZXSreX-e4UgI"} });
         private readonly BotConfiguration _config;
         private static Dictionary<string, string> _chatOptions;
         private static Dictionary<string, string> ChatOptions => _chatOptions ??
@@ -37,8 +40,8 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
         public Task EchoAsync(Update update)
         {
-            if (!string.IsNullOrEmpty(update.Message.Sticker.FileId) && update.Message.Chat.Id == _config.DefaultChatId)
-                _botService.Client.SendTextMessageAsync(_config.DefaultChatId, update.Message.Sticker.FileId);
+            //if (!string.IsNullOrEmpty(update.Message.Sticker.FileId) && update.Message.Chat.Id == _config.DefaultChatId)
+            //    _botService.Client.SendTextMessageAsync(_config.DefaultChatId, update.Message.Sticker.FileId);
 
             switch (update.Type)
             {
@@ -114,9 +117,10 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 return;
             }
 
-            if (Regex.IsMatch(message.Text, @"красава.*бот|бот.*красава", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(message.Text, @"красава.*бот|бот.*красава|cтаня.*красава", RegexOptions.IgnoreCase))
             {
-                await _botService.Client.SendTextMessageAsync(message.Chat.Id, "Спасибо, бро)))");
+                //await _botService.Client.SendTextMessageAsync(message.Chat.Id, "Спасибо, бро)))");
+                await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["krasava"]);
                 return;
             }
 
@@ -129,6 +133,42 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
             if (Regex.IsMatch(message.Text, @"^нет", RegexOptions.IgnoreCase))
             {
                 await _botService.Client.SendTextMessageAsync(message.Chat.Id, "Пидора ответ");
+                return;
+            }
+
+            if (Regex.IsMatch(message.Text, @"^Всем привет|^Привет Станя|^Здорова Станя", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["privet"]);
+                return;
+            }
+
+            if (Regex.IsMatch(message.Text, @"^Станя го бухать", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["go_buxat"]);
+                return;
+            }
+
+            if (Regex.IsMatch(message.Text, @"^го бухать ребята", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["buxat_student"]);
+                return;
+            }
+
+            if (Regex.IsMatch(message.Text, @"так точно", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["capitan"]);
+                return;
+            }
+
+            if (Regex.IsMatch(message.Text, @"кофе", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["pikachu_coffe"]);
+                return;
+            }
+
+            if (Regex.IsMatch(message.Text, @"где\sты|где\sвы", RegexOptions.IgnoreCase))
+            {
+                await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["gde_vse"]);
                 return;
             }
 
