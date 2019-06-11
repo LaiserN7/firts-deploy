@@ -267,8 +267,8 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 case "/repeat":
                     var rowButtons = new List<IEnumerable<InlineKeyboardButton>>();
                     var _keyboard = new InlineKeyboardMarkup(rowButtons);
-                    rowButtons.Add(GetInlineKeyboard("Enable", $"commandId={0}&value=true"));
-                    rowButtons.Add(GetInlineKeyboard("Disable", $"commandId={0}&value=false"));
+                    rowButtons.Add(GetInlineKeyboard("Enable", $"commandId={0}&chatId={update.Message.Chat.Id}&value=true"));
+                    rowButtons.Add(GetInlineKeyboard("Disable", $"commandId={0}&chatId={update.Message.Chat.Id}&value=false"));
 
                     await _botService.Client.SendTextMessageAsync(
                         message.Chat.Id,
