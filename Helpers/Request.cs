@@ -2,7 +2,6 @@
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Newtonsoft.Json;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -16,7 +15,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Helpers
         public static async Task<string> RequestBody(HttpRequest request)
         {
             //This line allows us to set the reader for the request back at the beginning of its stream.
-            request.EnableRewind();
+            request.EnableBuffering();
 
             var buffer = new byte[Convert.ToInt32(request.ContentLength)];
 

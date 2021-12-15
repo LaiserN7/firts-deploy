@@ -14,22 +14,36 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
     public class UpdateService : IUpdateService
     {
         private readonly IBotService _botService;
+
         private readonly ILogger<UpdateService> _logger;
+
         // 449279856 - Наиль
         private static int[] _trustedUsers;
-        private static int[] TrustedUsers => _trustedUsers ?? (_trustedUsers = new[] { 449279856 });
+        private static int[] TrustedUsers => _trustedUsers ??= new[] {449279856};
         private static Dictionary<string, string> _chatFiles;
-        private static Dictionary<string, string> ChatFiles => _chatFiles ?? (_chatFiles = new Dictionary<string, string>
-        { { "Sticker_Ti_pidor", "CAADAgADbgEAAjbsGwVfHkWISq9DiQI" }, {"Bille_ok", "CAADAgADxgYAAkb7rATY_tcr05tnDQI" }, {"pikachu_coffe", "CAADAgADvwIAAjZ2IA6DDqb7e0kSxQI" },
-            {"capitan", "CAADAgADOgEAAhZ8aAOmH9gbWog58wI" }, {"buxat_student", "CAADBQADoQMAAukKyAM19jBdMVuSAgI"}, {"gde_vse", "CAADBQADqgMAAukKyAOMMrddotAFYQI" },
-            {"krasava", "CAADBQADewMAAukKyANR7TNPzLj7awI"}, { "go_buxat", "CAADBQADbwMAAukKyAOvzr7ZArpddAI"}, { "privet", "CAADAgADBQYAAhhC7giZXSreX-e4UgI"} });
+
+        private static Dictionary<string, string> ChatFiles => _chatFiles ??= new Dictionary<string, string>
+        {
+            {"Sticker_Ti_pidor", "CAADAgADbgEAAjbsGwVfHkWISq9DiQI"},
+            {"Bille_ok", "CAADAgADxgYAAkb7rATY_tcr05tnDQI"}, {"pikachu_coffe", "CAADAgADvwIAAjZ2IA6DDqb7e0kSxQI"},
+            {"capitan", "CAADAgADOgEAAhZ8aAOmH9gbWog58wI"}, {"buxat_student", "CAADBQADoQMAAukKyAM19jBdMVuSAgI"},
+            {"gde_vse", "CAADBQADqgMAAukKyAOMMrddotAFYQI"},
+            {"krasava", "CAADBQADewMAAukKyANR7TNPzLj7awI"}, {"go_buxat", "CAADBQADbwMAAukKyAOvzr7ZArpddAI"},
+            {"privet", "CAADAgADBQYAAhhC7giZXSreX-e4UgI"}
+        };
+
         private readonly BotConfiguration _config;
         private static Dictionary<string, string> _chatOptions;
-        private static Dictionary<string, string> ChatOptions => _chatOptions ??
-            (_chatOptions = new Dictionary<string, string> { { "repeat", "false" } });
+
+        private static Dictionary<string, string> ChatOptions => _chatOptions ??= new Dictionary<string, string>
+            {{"repeat", "false"}};
+
         private static Dictionary<string, string> _chatsIds;
-        private static Dictionary<string, string> ChatsIds => _chatsIds ??
-           (_chatsIds = new Dictionary<string, string> { { "main", "-1001300792680" }, {"private", "449279856" } });
+
+        private static Dictionary<string, string> ChatsIds => _chatsIds ??= new Dictionary<string, string>
+        {
+            {"main", "-1001300792680"}, {"private", "449279856"}
+        };
 
         public UpdateService(IBotService botService, ILogger<UpdateService> logger, IOptions<BotConfiguration> config)
         {
@@ -57,7 +71,6 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
             //_logger.LogInformation("Received Message from {0}", message.Chat.Id);
 
-            
 
             //if (message.Type == MessageType.Text)
             //{
@@ -84,7 +97,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
         private async Task HandlingCallback(CallbackQuery callback)
         {
             (byte commandId, long chatId, string value) = GetInfoFromCallBack(callback.Data);
-            if (commandId  == (byte) Commands.repeat)
+            if (commandId == (byte) Commands.repeat)
             {
                 ChatOptions["repeat"] = value;
                 await _botService.Client.SendTextMessageAsync(chatId, $"success update state of repeat to {value}");
@@ -96,7 +109,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
         {
             var message = update.Message;
 
-            if (message == null || message.Type != MessageType.Text) return;
+            if (message is not {Type: MessageType.Text}) return;
 
             if (ChatOptions["repeat"] == "true")
             {
@@ -111,7 +124,9 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 return;
             }
 
-            if (Regex.IsMatch(message.Text, @"руслан.*знаешь|знаешь.*руслан|руслан.*ведь|дим.*ведь|андрей.*ведь|антон.*ведь", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(message.Text,
+                    @"руслан.*знаешь|знаешь.*руслан|руслан.*ведь|дим.*ведь|андрей.*ведь|антон.*ведь",
+                    RegexOptions.IgnoreCase))
             {
                 await _botService.Client.SendStickerAsync(message.Chat.Id, ChatFiles["Sticker_Ti_pidor"]);
                 return;
@@ -172,11 +187,11 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 return;
             }
 
-            if (!TrustedUsers.Contains(message.From.Id)) return;
+
+            if (!TrustedUsers.Any(s => s == message.From.Id)) return;
 
             switch (message.Text.Split(' ').First())
             {
-
                 // send inline keyboard
                 case "/inline":
                     await _botService.Client.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
@@ -185,12 +200,12 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
                     var inlineKeyboard = new InlineKeyboardMarkup(new[]
                     {
-                        new [] // first row
+                        new[] // first row
                         {
                             InlineKeyboardButton.WithCallbackData("1.1"),
                             InlineKeyboardButton.WithCallbackData("1.2"),
                         },
-                        new [] // second row
+                        new[] // second row
                         {
                             InlineKeyboardButton.WithCallbackData("2.1"),
                             InlineKeyboardButton.WithCallbackData("2.2"),
@@ -207,8 +222,8 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 case "/keyboard":
                     ReplyKeyboardMarkup ReplyKeyboard = new[]
                     {
-                        new[] { "1.1", "1.2" },
-                        new[] { "2.1", "2.2" },
+                        new[] {"1.1", "1.2"},
+                        new[] {"2.1", "2.2"},
                     };
 
                     await _botService.Client.SendTextMessageAsync(
@@ -267,8 +282,10 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                 case "/repeat":
                     var rowButtons = new List<IEnumerable<InlineKeyboardButton>>();
                     var _keyboard = new InlineKeyboardMarkup(rowButtons);
-                    rowButtons.Add(GetInlineKeyboard("Enable", $"commandId={0}&chatId={update.Message.Chat.Id}&value=true"));
-                    rowButtons.Add(GetInlineKeyboard("Disable", $"commandId={0}&chatId={update.Message.Chat.Id}&value=false"));
+                    rowButtons.Add(GetInlineKeyboard("Enable",
+                        $"commandId={0}&chatId={update.Message.Chat.Id}&value=true"));
+                    rowButtons.Add(GetInlineKeyboard("Disable",
+                        $"commandId={0}&chatId={update.Message.Chat.Id}&value=false"));
 
                     await _botService.Client.SendTextMessageAsync(
                         message.Chat.Id,
@@ -278,7 +295,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
                 case "/info":
                     const string usage =
-@"Usage:
+                        @"Usage:
 /inline   - send inline keyboard
 /keyboard - send custom keyboard
 /request  - request location or contact
@@ -296,10 +313,11 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
             }
         }
 
-        private InlineKeyboardButton[] GetInlineKeyboard(string taskName, string callBackData) => new InlineKeyboardButton[]
-        {
-            InlineKeyboardButton.WithCallbackData(text:taskName, callbackData:callBackData)
-        };
+        private InlineKeyboardButton[] GetInlineKeyboard(string taskName, string callBackData) =>
+            new InlineKeyboardButton[]
+            {
+                InlineKeyboardButton.WithCallbackData(text: taskName, callbackData: callBackData)
+            };
 
         private (byte command, long chatId, string value) GetInfoFromCallBack(string callBack)
         {
@@ -315,10 +333,11 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                     return (command, chatId, m.Groups["value"].Value);
                 }
 
-              throw new ApplicationException($"Wrong query callBack = {callBack}");
+            throw new ApplicationException($"Wrong query callBack = {callBack}");
         }
 
-        public enum Commands: byte{
+        public enum Commands : byte
+        {
             repeat
         }
     }

@@ -23,7 +23,8 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
         public HttpClient GetProxyClient(string host, int port, string username, string password)
         {
-            var proxy = new WebProxy($"{host}:{port}/", false, new string[] { }, new NetworkCredential(username, password));
+            var proxy = new WebProxy($"{host}:{port}/", false, new string[] { },
+                new NetworkCredential(username, password));
 
             var httpClientHandler = new HttpClientHandler()
             {

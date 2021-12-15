@@ -13,7 +13,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -28,7 +28,6 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook
         public void Configure(IApplicationBuilder app)
         {
             app.UseExceptionMiddleware();
-            app.UseMvc();
         }
     }
 }
