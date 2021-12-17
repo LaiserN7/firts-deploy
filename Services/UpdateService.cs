@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Telegram.Bot.Examples.DotNetCoreWebHook.Enums;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -19,7 +20,7 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
         // 449279856 - Наиль
         private static int[] _trustedUsers;
-        private static int[] TrustedUsers => _trustedUsers ??= new[] {449279856};
+        private static IEnumerable<int> TrustedUsers => _trustedUsers ??= new[] {449279856};
         private static Dictionary<string, string> _chatFiles;
 
         private static Dictionary<string, string> ChatFiles => _chatFiles ??= new Dictionary<string, string>
@@ -57,16 +58,13 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
             //if (!string.IsNullOrEmpty(update.Message.Sticker.FileId) && update.Message.Chat.Id == _config.DefaultChatId)
             //    _botService.Client.SendTextMessageAsync(_config.DefaultChatId, update.Message.Sticker.FileId);
 
-            switch (update.Type)
+            return update.Type switch
             {
-                case UpdateType.Message:
-                    return Сheck(update);
+                UpdateType.Message => HandleMessage(update.Message),
+                UpdateType.CallbackQuery => HandlingCallback(update.CallbackQuery),
+                _ => throw new ApplicationException($"Type '{update.Type}' not support")
+            };
 
-                case UpdateType.CallbackQuery:
-                    return HandlingCallback(update.CallbackQuery);
-            }
-
-            throw new ApplicationException($"Type '{update.Type}' not support");
             //var message = update.Message;
 
             //_logger.LogInformation("Received Message from {0}", message.Chat.Id);
@@ -96,8 +94,8 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 
         private async Task HandlingCallback(CallbackQuery callback)
         {
-            (byte commandId, long chatId, string value) = GetInfoFromCallBack(callback.Data);
-            if (commandId == (byte) Commands.repeat)
+            var (commandId, chatId, value) = GetInfoFromCallBack(callback.Data);
+            if (commandId == (byte) Commands.Repeat)
             {
                 ChatOptions["repeat"] = value;
                 await _botService.Client.SendTextMessageAsync(chatId, $"success update state of repeat to {value}");
@@ -105,18 +103,15 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
         }
 
 
-        private async Task Сheck(Update update)
+        private async Task HandleMessage(Message message)
         {
-            var message = update.Message;
-
-            if (message is not {Type: MessageType.Text}) return;
+            if (!IsValid(message)) return;
 
             if (ChatOptions["repeat"] == "true")
             {
                 // Echo each Message
                 await _botService.Client.SendTextMessageAsync(message.Chat.Id, message.Text);
             }
-
 
             if (Regex.IsMatch(message.Text, @"туп.*бот|бот.*туп|бот.*глуп", RegexOptions.IgnoreCase))
             {
@@ -283,9 +278,9 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
                     var rowButtons = new List<IEnumerable<InlineKeyboardButton>>();
                     var _keyboard = new InlineKeyboardMarkup(rowButtons);
                     rowButtons.Add(GetInlineKeyboard("Enable",
-                        $"commandId={0}&chatId={update.Message.Chat.Id}&value=true"));
+                        $"commandId={0}&chatId={message.Chat.Id}&value=true"));
                     rowButtons.Add(GetInlineKeyboard("Disable",
-                        $"commandId={0}&chatId={update.Message.Chat.Id}&value=false"));
+                        $"commandId={0}&chatId={message.Chat.Id}&value=false"));
 
                     await _botService.Client.SendTextMessageAsync(
                         message.Chat.Id,
@@ -313,6 +308,12 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
             }
         }
 
+        private static bool IsValid(Message message)
+        {
+            if (message is not {Type: MessageType.Text}) return false;
+            return message.Text is not null;
+        }
+
         private InlineKeyboardButton[] GetInlineKeyboard(string taskName, string callBackData) =>
             new InlineKeyboardButton[]
             {
@@ -336,9 +337,6 @@ namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
             throw new ApplicationException($"Wrong query callBack = {callBack}");
         }
 
-        public enum Commands : byte
-        {
-            repeat
-        }
+      
     }
 }

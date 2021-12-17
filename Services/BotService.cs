@@ -2,37 +2,36 @@ using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
-using System.Threading.Tasks;
 
 namespace Telegram.Bot.Examples.DotNetCoreWebHook.Services
 {
     public class BotService : IBotService
     {
-        private readonly BotConfiguration _config;
+        private IOptions<BotConfiguration> Config { get; }
 
         public BotService(IOptions<BotConfiguration> config)
         {
-            _config = config.Value;
+            Config = config;
             // use proxy if configured in appsettings.*.json
-            Client = string.IsNullOrEmpty(_config.Host)
-                ? new TelegramBotClient(_config.BotToken)
+            Client = string.IsNullOrEmpty(Config.Value.Host)
+                ? new TelegramBotClient(Config.Value.BotToken)
                 : new TelegramBotClient(
-                    _config.BotToken,
-                    GetProxyClient(_config.Host, _config.Port, _config.UserName, _config.Password));
+                    Config.Value.BotToken,
+                    GetProxyClient(Config.Value.Host, Config.Value.Port, Config.Value.UserName, Config.Value.Password));
         }
 
-        public HttpClient GetProxyClient(string host, int port, string username, string password)
+        private static HttpClient GetProxyClient(string host, int port, string username, string password)
         {
-            var proxy = new WebProxy($"{host}:{port}/", false, new string[] { },
+            var proxy = new WebProxy($"{host}:{port}/", false, System.Array.Empty<string>(),
                 new NetworkCredential(username, password));
 
             var httpClientHandler = new HttpClientHandler()
             {
                 //Proxy = proxy,
-                SslProtocols = SslProtocols.Tls | SslProtocols.Ssl3 | SslProtocols.Ssl2
+                SslProtocols = SslProtocols.Tls
             };
 
-            var client = new HttpClient(handler: httpClientHandler, disposeHandler: true);
+            var client = new HttpClient(httpClientHandler, true);
             return client;
         }
 
